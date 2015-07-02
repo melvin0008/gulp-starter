@@ -1,8 +1,9 @@
 var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
-    rename = require('gulp-rename');
-    plumber = require('gulp-plumber');
-    browserSync = require('browser-sync');
+    rename = require('gulp-rename'),
+    plumber = require('gulp-plumber'),
+    browserSync = require('browser-sync'),
+    del = require('del'),
     reload      = browserSync.reload;
 
 gulp.task('scripts',function(){
@@ -18,6 +19,28 @@ gulp.task('html', function(){
     .pipe(reload({stream:true}));
 });
 
+gulp.task('build:cleanfolder', function (cb) {
+	del([
+		'build/**'
+	], cb);
+});
+
+gulp.task('build:copy', ['build:cleanfolder'], function(){
+    return gulp.src('app/**/*/')
+    .pipe(gulp.dest('build/'));
+});
+
+gulp.task('build:remove', ['build:copy'], function (cb) {
+	del([
+		'build/scss/', 
+		'build/js/!(*.min.js)'
+	], cb);
+});
+
+
+
+gulp.task('build', ['build:copy', 'build:remove']);
+
 gulp.task('browser-sync', function() {
     browserSync({
         server: {
@@ -26,6 +49,13 @@ gulp.task('browser-sync', function() {
     });
 });
 
+gulp.task('build:serve', function() {
+    browserSync({
+        server: {
+            baseDir: "./build/"
+        }
+    });
+});
 
 gulp.task ('watch', function(){
 	gulp.watch('app/js/**/*.js', ['scripts']);
